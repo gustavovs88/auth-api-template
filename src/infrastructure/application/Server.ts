@@ -1,4 +1,4 @@
-import * as http from 'http'
+import * as bodyParser from 'body-parser'
 import { once } from 'events'
 import express from 'express'
 import 'express-async-errors'
@@ -6,20 +6,32 @@ import { createHttpTerminator, HttpTerminator } from 'http-terminator'
 import httpPino, { HttpLogger } from 'pino-http'
 import pino, { Logger } from 'pino'
 import { IServerConfig } from '@config/types/IServerConfig'
-
+import { InversifyExpressServer } from 'inversify-express-utils'
+import { container } from '@di/container'
+import { inject, injectable } from 'inversify'
+import { Types } from '@di/types'
+@injectable()
 export class Server {
   public readonly router = express.Router()
-  public readonly app = express()
-
+  private server: InversifyExpressServer
   private logger: Logger = pino()
   private httpLogger: HttpLogger = httpPino()
-  private server?: http.Server
   private httpTerminator?: HttpTerminator
 
-  constructor(public config?: IServerConfig) {
-    this.app.disable('x-powered-by')
-    this.app.get('/v1/status', (_, res) => res.sendStatus(200))
-    this.app.use(this.router)
+  constructor(@inject(Types.Config) private config: IServerConfig) {
+    this.server = new InversifyExpressServer(container)
+    this.server.setConfig((app) => {
+      // add body parser
+      app.use(
+        bodyParser.urlencoded({
+          extended: true,
+        })
+      )
+      app.use(bodyParser.json())
+      app.disable('x-powered-by')
+      app.get('/v1/status', (_, res) => res.sendStatus(200))
+      app.use(this.router)
+    })
     this.router.use(
       express.json({ limit: this.config?.requestSizeLimit || '100kb' })
     )
@@ -34,17 +46,17 @@ export class Server {
    */
   public async listen(port = this.config?.port): Promise<number> {
     this.logger.info('Starting server')
-    const server = this.app.listen(port)
+    let app = this.server.build()
+    const server = app.listen(port)
     await once(server, 'listening')
-    this.server = server
     this.httpTerminator = createHttpTerminator({
       server,
       gracefulTerminationTimeout: this.config?.gracefulTerminationTimeout,
     })
 
     // https://github.com/nodejs/node/issues/27363
-    this.server.keepAliveTimeout = 65000
-    this.server.headersTimeout = 66000
+    server.keepAliveTimeout = 65000
+    server.headersTimeout = 66000
 
     const address = server.address()
     const assignedPort =

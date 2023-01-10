@@ -1,15 +1,15 @@
-import { Config } from '@config/Config'
+import { Types } from '@di/types'
 import { Server } from '@infrastructure/application/Server'
+import { inject, injectable } from 'inversify'
 import { Routes } from './Routes'
-
+@injectable()
 export class App {
-  static createApp() {
-    const config = new Config().get()
-    const server = new Server(config)
-    const router = server.router
-    const routes = new Routes(router)
-    routes.initRouter()
-
-    return server
+  constructor(
+    @inject(Types.Server) private server: Server,
+    @inject(Types.Routes) private routes: Routes
+  ) {}
+  createApp() {
+    this.routes.initRouter()
+    return this.server
   }
 }

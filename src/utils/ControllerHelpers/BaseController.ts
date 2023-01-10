@@ -4,6 +4,7 @@ import {
 } from '@utils/ControllerHelpers/types/IController'
 import { BaseError } from '@utils/Error/BaseError'
 import { InternalServerError } from '@utils/Error/InternalServerError'
+import { controller } from 'inversify-express-utils'
 
 export interface IController {
   handle(httpRequest: HttpRequest): Promise<HttpResponse>
@@ -19,7 +20,7 @@ type CustomResponse = {
   statusCode: number
   [key: string]: any
 }
-
+@controller('/')
 export abstract class BaseController implements IController {
   abstract handle(httpRequest: HttpRequest): Promise<HttpResponse>
 
