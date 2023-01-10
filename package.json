@@ -1,0 +1,41 @@
+{
+  "name": "resetei-auth",
+  "version": "1.0.0",
+  "description": "User authentication system",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "dev": "nodemon src/index.ts"
+  },
+  "keywords": [
+    "auth",
+    "authentication",
+    "resetei"
+  ],
+  "author": "gustavovs88",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-async-errors": "^3.1.1",
+    "http-terminator": "^3.2.0",
+    "inversify": "^6.0.1",
+    "inversify-express-utils": "^6.4.3",
+    "joi": "^17.7.0",
+    "pino": "^8.8.0",
+    "pino-http": "^8.3.1",
+    "reflect-metadata": "^0.1.13",
+    "swagger-ui-express": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.15",
+    "eslint": "^8.31.0",
+    "jest": "^29.3.1",
+    "nodemon": "^2.0.20",
+    "prettier": "^2.8.2",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.2",
+    "typescript": "^4.9.4"
+  }
+}
