@@ -21,29 +21,19 @@ export interface Configuration {
   serviceName: string
   environment: EnvironmentType
   shortEnvironment: string
-  instance?: string
+  awsRegion: string
+  tokenSecret: string
+  refreshTokenSecret: string
+  adminEmail: string
+  webDomain: string
+  // Message Broker
 
-  observability: {
-    enabled: boolean
-    enableDebug?: boolean
-    ignoreIncomingPaths?: string[]
-  }
+  kafkaServer: string
 
+  // Database
   logging: {
     enabled: boolean
     queueURL: string
-  }
-
-  docs: {
-    enabled: boolean
-  }
-
-  // Databases configuration
-  redis: {
-    enabled: boolean
-    port: number
-    host: string
-    db: number
   }
 }
 
@@ -67,35 +57,28 @@ export class Config implements IConfig {
     dotenv.config()
 
     return {
+      awsRegion: process.env.AWS_REGION || 'sa-east-1',
       requestSizeLimit: '100kb',
       gracefulTerminationTimeout: 10 * 1000,
 
       serviceName: process.env.SERVICE_NAME || 'no-name',
+      adminEmail: process.env.ADMIN_EMAIL || '',
+      webDomain: process.env.WEB_DOMAIN || '',
       environment: (process.env.NODE_ENV as EnvironmentType) || 'development',
       shortEnvironment:
         process.env.NODE_ENV == EnvironmentType.Production ? 'prd' : 'stg',
 
+      tokenSecret: process.env.TOKEN_SECRET || '',
+      refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET || '',
+
       logging: {
-        enabled: process.env.LOGGING_ENABLED === 'false',
+        enabled: process.env.LOGGING_ENABLED === 'true',
         queueURL: process.env.LOGGING_QUEUE_URL || '',
       },
 
-      docs: {
-        enabled: process.env.DOCS_ENABLED === 'true',
-      },
+      kafkaServer: process.env.KAFKA_SERVER || 'localhost:9092',
 
-      observability: {
-        enabled: process.env.OBSERVABILITY_TRACE_ENABLED === 'true',
-      },
-
-      redis: {
-        enabled: process.env.REDIS_ENABLED === 'true',
-        host: process.env.REDIS_HOST || '',
-        port: Number(process.env.REDIS_PORT) || 6379,
-        db: Number(process.env.REDIS_DB) || 9,
-      },
-
-      port: Number(process.env.PORT) || 8000,
+      port: Number(process.env.PORT) || 80,
     }
   }
 }

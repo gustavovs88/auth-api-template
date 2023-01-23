@@ -1,4 +1,4 @@
-import { IController } from '@utils/ControllerHelpers/BaseController'
+import { IController } from '@utils/controllerHelpers/BaseController'
 
 export interface IRoutes {
   path: string

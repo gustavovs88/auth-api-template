@@ -3,41 +3,45 @@ import { once } from 'events'
 import express from 'express'
 import 'express-async-errors'
 import { createHttpTerminator, HttpTerminator } from 'http-terminator'
-import httpPino, { HttpLogger } from 'pino-http'
-import pino, { Logger } from 'pino'
 import { IServerConfig } from '@config/types/IServerConfig'
 import { InversifyExpressServer } from 'inversify-express-utils'
+import cookieParser from 'cookie-parser'
 import { container } from '@di/container'
 import { inject, injectable } from 'inversify'
 import { Types } from '@di/types'
+import { errorHandler } from '@utils/exceptions/ErrorHandler'
+import { Logger } from '@infrastructure/logger/Logger'
+import { MessageBrokerManager } from '@infrastructure/messageBroker/MessageBrokerManager'
 @injectable()
 export class Server {
   public readonly router = express.Router()
   private server: InversifyExpressServer
-  private logger: Logger = pino()
-  private httpLogger: HttpLogger = httpPino()
   private httpTerminator?: HttpTerminator
 
-  constructor(@inject(Types.Config) private config: IServerConfig) {
+  constructor(
+    @inject(Types.Config) private config: IServerConfig,
+    @inject(Types.Logger) private logger: Logger,
+    @inject(Types.MessageBrokerManager)
+    private messageBrokerManager: MessageBrokerManager
+  ) {
     this.server = new InversifyExpressServer(container)
     this.server.setConfig((app) => {
-      // add body parser
+      // adding app configs
       app.use(
         bodyParser.urlencoded({
           extended: true,
         })
       )
       app.use(bodyParser.json())
+      app.use(cookieParser())
       app.disable('x-powered-by')
       app.get('/v1/status', (_, res) => res.sendStatus(200))
       app.use(this.router)
+      app.use(errorHandler)
     })
     this.router.use(
       express.json({ limit: this.config?.requestSizeLimit || '100kb' })
     )
-
-    if (this.config?.logging?.enabled) this.router.use(this.httpLogger)
-
     // TO DO add remote logger
   }
 
@@ -62,6 +66,33 @@ export class Server {
     const assignedPort =
       address && typeof address !== 'string' ? address.port : port
     this.logger.info(`Server listening on http://localhost:${assignedPort}`)
+
+    const errorTypes = ['unhandledRejection', 'uncaughtException']
+    const signalTraps = ['SIGTERM', 'SIGINT', 'SIGUSR2']
+
+    errorTypes.forEach((type) => {
+      process.on(type, async () => {
+        try {
+          this.logger.info(`process.on ${type}`)
+          await this.dispose()
+          await this.messageBrokerManager.shutDownAll()
+          process.exit(0)
+        } catch (_) {
+          process.exit(1)
+        }
+      })
+    })
+
+    signalTraps.forEach((type) => {
+      process.once(type, async () => {
+        try {
+          await this.dispose()
+          await this.messageBrokerManager.shutDownAll()
+        } finally {
+          process.kill(process.pid, type)
+        }
+      })
+    })
     return Number(assignedPort)
   }
 
@@ -73,7 +104,7 @@ export class Server {
       const end = new Date().getTime()
       this.logger.info(`Server disposed in ${end - start}ms`)
     } else {
-      this.logger.warn('No server to dispose')
+      this.logger.info('No server to dispose')
     }
   }
 }

@@ -1,0 +1,6 @@
+{
+  "migrations": [
+    "0.0.0-create-customer-table.ts",
+    "0.0.1-delete-customer-table.ts"
+  ]
+}

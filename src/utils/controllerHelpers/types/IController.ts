@@ -20,6 +20,7 @@ export type HttpRequest = {
   method?: any
   userAgent?: any
   remoteAddress?: any
+  cookies?: any
   body?: any
   headers?: any
   params?: any
