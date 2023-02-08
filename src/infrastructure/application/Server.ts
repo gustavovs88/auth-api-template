@@ -12,6 +12,7 @@ import { Types } from '@di/types'
 import { errorHandler } from '@utils/exceptions/ErrorHandler'
 import { Logger } from '@infrastructure/logger/Logger'
 import { MessageBrokerManager } from '@infrastructure/messageBroker/MessageBrokerManager'
+import cors from 'cors'
 @injectable()
 export class Server {
   public readonly router = express.Router()
@@ -35,6 +36,15 @@ export class Server {
       app.use(bodyParser.json())
       app.use(cookieParser())
       app.disable('x-powered-by')
+      app.use(
+        cors({
+          origin: ['http://localhost:5173'],
+          methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+          credentials: true,
+          preflightContinue: false,
+          optionsSuccessStatus: 204,
+        })
+      )
       app.get('/v1/status', (_, res) => res.sendStatus(200))
       app.use(this.router)
       app.use(errorHandler)

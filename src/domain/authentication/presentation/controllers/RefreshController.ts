@@ -7,7 +7,7 @@ import {
 } from '@utils/controllerHelpers/types/IController'
 import { times } from '@utils/datesAndTimes/timesConstants'
 import { BaseError } from '@utils/exceptions/BaseError'
-import { ForbiddenError } from '@utils/exceptions/ForbiddenError'
+import { UnauthorizedError } from '@utils/exceptions/UnauthorizedError'
 import { inject, injectable } from 'inversify'
 
 @injectable()
@@ -24,7 +24,7 @@ export class RefreshController extends BaseController {
     try {
       try {
         if (!refreshToken) {
-          throw new ForbiddenError('Refresh Token not provided')
+          throw new UnauthorizedError('Refresh Token not provided')
         }
         const tokens = await this.authService.refreshSession(refreshToken)
         httpResponse.cookie('refreshToken', tokens.refresh, {

@@ -20,14 +20,14 @@ export class LoginController extends BaseController {
   ): Promise<HttpResponse> {
     const { email, password } = httpRequest.body
     try {
-      const tokens = await this.authService.login(email, password)
-      httpResponse.cookie('refreshToken', tokens.refreshToken, {
+      const data = await this.authService.login(email, password)
+      httpResponse.cookie('refreshToken', data.refreshToken, {
         httpOnly: true,
         sameSite: 'None',
         secure: true,
         maxAge: times['2_DAYS'],
       })
-      return this.ok({ accessToken: tokens.accessToken })
+      return this.ok({ accessToken: data.accessToken, customer: data.customer })
     } catch (error) {
       return this.error(error as BaseError)
     }

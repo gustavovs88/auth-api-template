@@ -18,6 +18,7 @@ export let Types = {
   // Authentication
   AuthRoutes: Symbol.for('AuthRoutes'),
   LoginController: Symbol.for('LoginController'),
+  LogoutController: Symbol.for('LogoutController'),
   RefreshController: Symbol.for('RefreshController'),
   ResetPasswordController: Symbol.for('ResetPasswordController'),
   AuthService: Symbol.for('AuthService'),

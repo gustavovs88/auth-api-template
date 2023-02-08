@@ -5,7 +5,14 @@ import { ILogger } from './ILogger'
 export class Logger implements ILogger {
   private logger: BaseLogger
   constructor() {
-    this.logger = pino()
+    this.logger = pino({
+      level: process.env.PINO_LOG_LEVEL || 'info',
+      formatters: {
+        level: (label) => {
+          return { level: label }
+        },
+      },
+    })
   }
   info(message: string) {
     this.logger.info(message)

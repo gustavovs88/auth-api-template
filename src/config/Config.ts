@@ -63,7 +63,7 @@ export class Config implements IConfig {
 
       serviceName: process.env.SERVICE_NAME || 'no-name',
       adminEmail: process.env.ADMIN_EMAIL || '',
-      webDomain: process.env.WEB_DOMAIN || '',
+      webDomain: process.env.WEB_DOMAIN || 'http://localhost:5173',
       environment: (process.env.NODE_ENV as EnvironmentType) || 'development',
       shortEnvironment:
         process.env.NODE_ENV == EnvironmentType.Production ? 'prd' : 'stg',

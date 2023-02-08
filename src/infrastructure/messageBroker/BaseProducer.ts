@@ -42,7 +42,7 @@ export class BaseProducer {
     }
     try {
       await this.producer.send(record)
-      this.log.info(`Sending message: ${record}`)
+      this.log.info(`Sending message: ${JSON.stringify(record)}`)
     } catch (error) {
       this.log.error(`Error sending message: ${error}`)
     }

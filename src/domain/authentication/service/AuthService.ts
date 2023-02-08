@@ -2,7 +2,6 @@ import { Types } from '@di/types'
 import { inject, injectable } from 'inversify'
 import { validateHash } from '@utils/encryption/Hash'
 import { CustomerService } from '@domain/customer/service/CustomerService'
-import { ForbiddenError } from '@utils/exceptions/ForbiddenError'
 import JWT, { JwtPayload } from 'jsonwebtoken'
 import { IConfig } from '@config/types/IConfig'
 import { UnauthorizedError } from '@utils/exceptions/UnauthorizedError'
@@ -26,10 +25,13 @@ export class AuthService {
     const { tokenSecret, refreshTokenSecret } = this.config.get()
 
     const isCredentialsValid = await validateHash(password, customer?.password)
-    if (!isCredentialsValid) throw new ForbiddenError('Credentials not valid')
+    if (!isCredentialsValid)
+      throw new UnauthorizedError('E-mail ou senha inválidos.')
     const accessToken = JWT.sign(
       {
         customerId: customer?.id,
+        customerName: customer?.name,
+        customerEmail: customer?.email,
       },
       tokenSecret,
       { expiresIn: '2m' }
@@ -37,11 +39,13 @@ export class AuthService {
     const refreshToken = JWT.sign(
       {
         customerId: customer?.id,
+        customerName: customer?.name,
+        customerEmail: customer?.email,
       },
       refreshTokenSecret,
       { expiresIn: '1d' }
     )
-    return { accessToken, refreshToken }
+    return { accessToken, refreshToken, customer }
   }
 
   async refreshSession(refreshToken: string) {
@@ -51,6 +55,8 @@ export class AuthService {
       const accessToken = JWT.sign(
         {
           customerId: decoded.customerId,
+          customerName: decoded?.customerName,
+          customerEmail: decoded?.customerEmail,
         },
         tokenSecret,
         { expiresIn: '2m' }
@@ -58,6 +64,8 @@ export class AuthService {
       const refresh = JWT.sign(
         {
           customerId: decoded.customerId,
+          customerName: decoded?.customerName,
+          customerEmail: decoded?.customerEmail,
         },
         refreshTokenSecret,
         { expiresIn: '2d' }
@@ -74,6 +82,7 @@ export class AuthService {
     const token = JWT.sign(
       {
         customerId: customer?.id,
+        customerName: customer?.name,
       },
       refreshTokenSecret,
       { expiresIn: '1d' }
@@ -98,7 +107,7 @@ export class AuthService {
     try {
       JWT.verify(token, refreshTokenSecret) as JwtPayload
     } catch (error) {
-      throw new ForbiddenError('Reset password link has expired')
+      throw new UnauthorizedError('Reset password link has expired')
     }
   }
 }

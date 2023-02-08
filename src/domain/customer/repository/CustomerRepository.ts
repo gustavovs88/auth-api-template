@@ -1,9 +1,10 @@
 import { inject, injectable } from 'inversify'
 import {
-  ICustomer,
+  ICustomerRepository,
+  ICustomerParams,
   ICustomerDbResponse,
   ICustomerResponse,
-} from '../types/ICustomer'
+} from '@domain/customer/types/ICustomer'
 import { dynamoDBDocClient } from '@infrastructure/database/client/DynamoDBClient'
 import { v4 as uuidv4 } from 'uuid'
 import { InternalServerError } from '@utils/exceptions/InternalServerError'
@@ -15,15 +16,13 @@ import {
   QueryCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb'
-import { ICustomerRepository } from './ICustomerRepository'
-
 @injectable()
 export class CustomerRepository implements ICustomerRepository {
   private tableName: string
   constructor(@inject(Types.Logger) private logger: Logger) {
     this.tableName = 'customers'
   }
-  async insert(params: ICustomer) {
+  async insert(params: ICustomerParams) {
     const query = {
       TableName: this.tableName,
       Item: { ...params, id: uuidv4() },

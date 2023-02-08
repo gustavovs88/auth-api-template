@@ -5,11 +5,15 @@ import { RefreshController } from '@domain/authentication/presentation/controlle
 import { LoginController } from '@domain/authentication/presentation/controllers/LoginController'
 import { ResetPasswordController } from '@domain/authentication/presentation/controllers/ResetPasswordController'
 import { ValidateResetPasswordLinkController } from './controllers/ValidateResetPasswordLink'
+import { LogoutController } from './controllers/LogoutController'
 @injectable()
 export class AuthRoutes {
   constructor(
     @inject(Types.LoginController)
     private loginController: LoginController,
+    @inject(Types.LogoutController)
+    private logoutController: LogoutController,
+
     @inject(Types.RefreshController)
     private refreshController: RefreshController,
     @inject(Types.ResetPasswordController)
@@ -22,6 +26,10 @@ export class AuthRoutes {
     {
       path: '/api/v1/auth/login',
       controller: this.loginController,
+    },
+    {
+      path: '/api/v1/auth/logout',
+      controller: this.logoutController,
     },
     {
       path: '/api/v1/auth/refresh',

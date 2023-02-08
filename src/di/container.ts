@@ -24,6 +24,11 @@ import { SendEmailProducer } from '@domain/email/service/SendEmailProducer'
 import { SendEmailConsumer } from '@domain/email/service/SendEmailConsumer'
 import { ValidateResetPasswordLinkController } from '@domain/authentication/presentation/controllers/ValidateResetPasswordLink'
 import { PutCustomerPasswordController } from '@domain/customer/presentation/controllers/PutCustomerPasswordController'
+import { LogoutController } from '@domain/authentication/presentation/controllers/LogoutController'
+import {
+  ICustomerRepository,
+  ICustomerService,
+} from '@domain/customer/types/ICustomer'
 
 let container = new Container({ defaultScope: 'Singleton' })
 
@@ -42,12 +47,15 @@ container.bind(Types.CreateCustomerController).to(CreateCustomerController)
 container
   .bind(Types.PutCustomerPasswordController)
   .to(PutCustomerPasswordController)
-container.bind(Types.CustomerService).to(CustomerService)
-container.bind(Types.CustomerRepository).to(CustomerRepository)
+container.bind<ICustomerService>(Types.CustomerService).to(CustomerService)
+container
+  .bind<ICustomerRepository>(Types.CustomerRepository)
+  .to(CustomerRepository)
 container.bind<ICustomerRoutes>(Types.CustomerRoutes).to(CustomerRoutes)
 // Authentication
 container.bind(Types.AuthRoutes).to(AuthRoutes)
 container.bind(Types.LoginController).to(LoginController)
+container.bind(Types.LogoutController).to(LogoutController)
 container.bind(Types.RefreshController).to(RefreshController)
 container.bind(Types.AuthService).to(AuthService)
 container.bind(Types.ResetPasswordController).to(ResetPasswordController)

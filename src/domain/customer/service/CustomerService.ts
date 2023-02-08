@@ -1,20 +1,25 @@
 import { Types } from '@di/types'
 import { inject, injectable } from 'inversify'
-import { ICustomer, ICustomerResponse } from '../types/ICustomer'
+import {
+  ICustomerParams,
+  ICustomerRepository,
+  ICustomerResponse,
+  ICustomerService,
+} from '@domain/customer/types/ICustomer'
 import { hash } from '@utils/encryption/Hash'
-import { ICustomerRepository } from '../repository/ICustomerRepository'
-import { ForbiddenError } from '@utils/exceptions/ForbiddenError'
-import JWT, { JwtPayload } from 'jsonwebtoken'
+import { UnauthorizedError } from '@utils/exceptions/UnauthorizedError'
+import JWT, { JsonWebTokenError, JwtPayload } from 'jsonwebtoken'
 import { IConfig } from '@config/types/IConfig'
+import { InternalServerError } from '@utils/exceptions/InternalServerError'
 
 @injectable()
-export class CustomerService {
+export class CustomerService implements ICustomerService {
   constructor(
     @inject(Types.CustomerRepository)
     private customerRepository: ICustomerRepository,
     @inject(Types.Config) private config: IConfig
   ) {}
-  async create(params: ICustomer): Promise<ICustomerResponse> {
+  async create(params: ICustomerParams): Promise<ICustomerResponse> {
     params.password = await hash(params.password)
     const isEmailAvailable = !Boolean(
       await this.customerRepository.getByEmail(params.email)
@@ -24,7 +29,7 @@ export class CustomerService {
       delete customerInserted.password
       return customerInserted
     }
-    throw new ForbiddenError('Email already registered')
+    throw new UnauthorizedError('Email already registered')
   }
 
   async getById(customerId: string): Promise<ICustomerResponse | undefined> {
@@ -50,7 +55,12 @@ export class CustomerService {
         password
       )
     } catch (error) {
-      throw new ForbiddenError('Invalid Token')
+      console.log(error)
+      if (error instanceof JsonWebTokenError)
+        throw new UnauthorizedError('Link expirado ou inválido')
+      throw new InternalServerError(
+        'Tivemos um problema ao atualizar sua senha.'
+      )
     }
   }
 }

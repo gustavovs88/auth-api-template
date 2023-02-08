@@ -6,7 +6,7 @@ import {
   HttpResponse,
 } from '@utils/controllerHelpers/types/IController'
 import { BaseError } from '@utils/exceptions/BaseError'
-import { ForbiddenError } from '@utils/exceptions/ForbiddenError'
+import { UnauthorizedError } from '@utils/exceptions/UnauthorizedError'
 import { inject, injectable } from 'inversify'
 
 @injectable()
@@ -17,21 +17,18 @@ export class PutCustomerPasswordController extends BaseController {
     super()
   }
   async handle(httpRequest: HttpRequest): Promise<HttpResponse> {
-    const resetPasswordToken = httpRequest.cookies?.resetPasswordToken
+    const { password, resetPasswordToken } = httpRequest.body
     try {
-      try {
-        if (!resetPasswordToken) {
-          throw new ForbiddenError('Reset password Token not provided')
-        }
-        const { password } = httpRequest.body
-        const customer = await this.customerService.updatePassword(
-          resetPasswordToken,
-          password
+      if (!resetPasswordToken) {
+        throw new UnauthorizedError(
+          'Link inválido. Favor acessar o link enviado no seu e-mail.'
         )
-        return this.ok({ customer })
-      } catch (error) {
-        return this.error(error as BaseError)
       }
+      const customer = await this.customerService.updatePassword(
+        resetPasswordToken,
+        password
+      )
+      return this.ok({ customer })
     } catch (error) {
       return this.error(error as BaseError)
     }
