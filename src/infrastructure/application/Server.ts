@@ -13,18 +13,21 @@ import { errorHandler } from '@utils/exceptions/ErrorHandler'
 import { Logger } from '@infrastructure/logger/Logger'
 import { MessageBrokerManager } from '@infrastructure/messageBroker/MessageBrokerManager'
 import cors from 'cors'
+import { IConfig } from '@config/types/IConfig'
 @injectable()
 export class Server {
   public readonly router = express.Router()
   private server: InversifyExpressServer
+  private serverConfig: IServerConfig
   private httpTerminator?: HttpTerminator
 
   constructor(
-    @inject(Types.Config) private config: IServerConfig,
+    @inject(Types.Config) config: IConfig,
     @inject(Types.Logger) private logger: Logger,
     @inject(Types.MessageBrokerManager)
     private messageBrokerManager: MessageBrokerManager
   ) {
+    this.serverConfig = config.get()
     this.server = new InversifyExpressServer(container)
     this.server.setConfig((app) => {
       // adding app configs
@@ -38,7 +41,7 @@ export class Server {
       app.disable('x-powered-by')
       app.use(
         cors({
-          origin: ['http://localhost:5173'],
+          origin: ['http://localhost:5173', this.serverConfig.webDomain],
           methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
           credentials: true,
           preflightContinue: false,
@@ -50,7 +53,7 @@ export class Server {
       app.use(errorHandler)
     })
     this.router.use(
-      express.json({ limit: this.config?.requestSizeLimit || '100kb' })
+      express.json({ limit: this.serverConfig?.requestSizeLimit || '100kb' })
     )
     // TO DO add remote logger
   }
@@ -58,14 +61,14 @@ export class Server {
   /** When no port is passed, node listens on random free port.
    * Returned Promise resolves to the assigned port.
    */
-  public async listen(port = this.config?.port): Promise<number> {
+  public async listen(port = this.serverConfig?.port): Promise<number> {
     this.logger.info('Starting server')
     let app = this.server.build()
     const server = app.listen(port)
     await once(server, 'listening')
     this.httpTerminator = createHttpTerminator({
       server,
-      gracefulTerminationTimeout: this.config?.gracefulTerminationTimeout,
+      gracefulTerminationTimeout: this.serverConfig?.gracefulTerminationTimeout,
     })
 
     // https://github.com/nodejs/node/issues/27363

@@ -1,8 +1,9 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   roots: ['<rootDir>/src'],
-  preset: 'ts-jest',
-  testEnvironment: 'node',
+  preset: '@shelf/jest-dynamodb',
+  transform: {
+    '^.+\\.ts?$': 'ts-jest',
+  },
   coverageDirectory: 'coverage',
   setupFilesAfterEnv: ['<rootDir>/src/jest.setup.ts'],
   moduleNameMapper: {

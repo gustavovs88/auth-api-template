@@ -1,5 +1,5 @@
 import { Types } from '@di/types'
-import { CustomerService } from '@domain/customer/service/CustomerService'
+import { ICustomerService } from '@domain/customer/types/ICustomer'
 import { BaseController } from '@utils/controllerHelpers/BaseController'
 import {
   HttpRequest,
@@ -12,7 +12,7 @@ import { inject, injectable } from 'inversify'
 @injectable()
 export class PutCustomerPasswordController extends BaseController {
   constructor(
-    @inject(Types.CustomerService) private customerService: CustomerService
+    @inject(Types.CustomerService) private customerService: ICustomerService
   ) {
     super()
   }
@@ -24,11 +24,8 @@ export class PutCustomerPasswordController extends BaseController {
           'Link inválido. Favor acessar o link enviado no seu e-mail.'
         )
       }
-      const customer = await this.customerService.updatePassword(
-        resetPasswordToken,
-        password
-      )
-      return this.ok({ customer })
+      await this.customerService.updatePassword(resetPasswordToken, password)
+      return this.ok({})
     } catch (error) {
       return this.error(error as BaseError)
     }

@@ -5,18 +5,18 @@ import {
   waitUntilTableExists,
 } from '@aws-sdk/client-dynamodb'
 import { dynamoDBClient } from '@infrastructure/database/client/DynamoDBClient'
-import { tableParams } from '@infrastructure/database/models/CustomerModel'
+import { customerTableParams } from '@infrastructure/database/models/CustomerModel'
 import { Logger } from '@infrastructure/logger/Logger'
 import { InternalServerError } from '@utils/exceptions/InternalServerError'
 
 const logger = new Logger()
 export async function up() {
   try {
-    await dynamoDBClient.send(new CreateTableCommand(tableParams))
+    await dynamoDBClient.send(new CreateTableCommand(customerTableParams))
     await waitUntilTableExists(
       {
         client: dynamoDBClient,
-        maxWaitTime: 10,
+        maxWaitTime: 45,
         maxDelay: 2,
         minDelay: 1,
       },
@@ -36,7 +36,7 @@ export async function down() {
     await waitUntilTableNotExists(
       {
         client: dynamoDBClient,
-        maxWaitTime: 10,
+        maxWaitTime: 45,
         maxDelay: 2,
         minDelay: 1,
       },

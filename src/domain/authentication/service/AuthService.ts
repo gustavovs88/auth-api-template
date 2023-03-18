@@ -5,19 +5,19 @@ import { CustomerService } from '@domain/customer/service/CustomerService'
 import JWT, { JwtPayload } from 'jsonwebtoken'
 import { IConfig } from '@config/types/IConfig'
 import { UnauthorizedError } from '@utils/exceptions/UnauthorizedError'
-import { SendEmailProducer } from '@domain/email/service/SendEmailProducer'
 import {
   ETemplateDomain,
   ETemplateName,
 } from '@domain/email/service/ITemplateFactory'
+import { SqsProducer } from '@domain/email/service/SqsProducer'
 
 @injectable()
 export class AuthService {
   constructor(
     @inject(Types.CustomerService)
     private customerService: CustomerService,
-    @inject(Types.SendEmailProducer)
-    private emailProducer: SendEmailProducer,
+    @inject(Types.SqsProducer)
+    private sqsProducer: SqsProducer,
     @inject(Types.Config) private config: IConfig
   ) {}
   async login(email: string, password: string) {
@@ -45,6 +45,7 @@ export class AuthService {
       refreshTokenSecret,
       { expiresIn: '1d' }
     )
+    delete customer?.password
     return { accessToken, refreshToken, customer }
   }
 
@@ -78,6 +79,7 @@ export class AuthService {
 
   async resetPassword(email: string) {
     const customer = await this.customerService.getByEmail(email)
+    if (!customer) return {}
     const { adminEmail, refreshTokenSecret, webDomain } = this.config.get()
     const token = JWT.sign(
       {
@@ -87,18 +89,21 @@ export class AuthService {
       refreshTokenSecret,
       { expiresIn: '1d' }
     )
-    const link = `${webDomain}/app/reset-password?token=${token}`
+    const link = `${webDomain}/app/reset-password/?token=${token}`
     const subject = 'Resetei - Alteração de senha'
     const properties = {
-      email,
+      customerId: customer?.id,
+      toEmail: email,
       fromEmail: adminEmail,
       subject,
       link,
       name: customer?.name,
       templateName: ETemplateName.ResetPassword,
       templateDomain: ETemplateDomain.Application,
+      messageGroup: 'resetPassword',
+      deduplicationId: `resetPassword-${customer?.id}-${Date.now()}`,
     }
-    await this.emailProducer.send(properties)
+    await this.sqsProducer.sendSESEmail(properties)
     return token
   }
 

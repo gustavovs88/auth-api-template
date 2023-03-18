@@ -6,7 +6,7 @@ import {
   ListTablesCommand,
 } from '@aws-sdk/client-dynamodb'
 import { dynamoDBClient } from '@infrastructure/database/client/DynamoDBClient'
-import { tableParams } from '@infrastructure/database/models/CustomerModel'
+import { customerTableParams } from '@infrastructure/database/models/CustomerModel'
 import { Logger } from '@infrastructure/logger/Logger'
 import { InternalServerError } from '@utils/exceptions/InternalServerError'
 
@@ -34,7 +34,7 @@ export async function up() {
 }
 export async function down() {
   try {
-    await dynamoDBClient.send(new CreateTableCommand(tableParams))
+    await dynamoDBClient.send(new CreateTableCommand(customerTableParams))
     await waitUntilTableExists(
       {
         client: dynamoDBClient,

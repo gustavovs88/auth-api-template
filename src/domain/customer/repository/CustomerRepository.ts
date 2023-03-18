@@ -12,6 +12,7 @@ import { Types } from '@di/types'
 import { Logger } from '@infrastructure/logger/Logger'
 import {
   GetCommand,
+  GetCommandInput,
   PutCommand,
   QueryCommand,
   UpdateCommand,
@@ -42,7 +43,9 @@ export class CustomerRepository implements ICustomerRepository {
     const query = {
       TableName: this.tableName,
       Key: { id: customerId },
-    }
+      ExpressionAttributeNames: { '#n': 'name' },
+      ProjectionExpression: 'id, #n, email',
+    } as GetCommandInput
 
     try {
       const data: ICustomerDbResponse = (await dynamoDBDocClient.send(
@@ -94,13 +97,14 @@ export class CustomerRepository implements ICustomerRepository {
     }
 
     try {
-      const data: ICustomerDbResponse = (await dynamoDBDocClient.send(
+      const data = (await dynamoDBDocClient.send(
         new UpdateCommand(query)
       )) as ICustomerDbResponse
+      console.log('update password data ::', data)
       return data.Item
     } catch (error) {
       this.logger.error(
-        `Failed to update customer ${customerId} password: ${error}`
+        `Failed to update customer ${customerId} password. ${error}`
       )
       throw new InternalServerError('Failed to update customer password')
     }

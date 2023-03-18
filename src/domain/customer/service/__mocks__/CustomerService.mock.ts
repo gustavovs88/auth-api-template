@@ -9,6 +9,13 @@ export const mockCustomerResponse = {
   id: 'any_customer_id',
 }
 
+export const mockCreateCustomerParams = {
+  email: 'any_email@domain.com',
+  name: 'John Doe',
+  id: 'any_customer_id',
+  password: 'any_password',
+}
+
 export class mockCustomerService implements ICustomerService {
   async create(): Promise<ICustomerResponse> {
     return mockCustomerResponse

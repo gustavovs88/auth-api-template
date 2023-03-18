@@ -18,7 +18,7 @@ export class TemplateFactory {
       return email
     } catch (error: any) {
       throw new InternalServerError(
-        `Unable to generate email html Error: ${error}`
+        `Unable to generate email html. Error: ${error}`
       )
     }
   }

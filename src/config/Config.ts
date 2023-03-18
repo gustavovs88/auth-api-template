@@ -22,6 +22,7 @@ export interface Configuration {
   environment: EnvironmentType
   shortEnvironment: string
   awsRegion: string
+  sqsUrl: string
   tokenSecret: string
   refreshTokenSecret: string
   adminEmail: string
@@ -57,7 +58,8 @@ export class Config implements IConfig {
     dotenv.config()
 
     return {
-      awsRegion: process.env.AWS_REGION || 'sa-east-1',
+      awsRegion: process.env.AWS_REGION || 'us-east-1',
+      sqsUrl: process.env.SQS_URL || '',
       requestSizeLimit: '100kb',
       gracefulTerminationTimeout: 10 * 1000,
 

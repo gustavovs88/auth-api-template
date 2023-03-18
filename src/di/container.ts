@@ -29,6 +29,7 @@ import {
   ICustomerRepository,
   ICustomerService,
 } from '@domain/customer/types/ICustomer'
+import { SqsProducer } from '@domain/email/service/SqsProducer'
 
 let container = new Container({ defaultScope: 'Singleton' })
 
@@ -41,6 +42,7 @@ container.bind(Types.MigrationsClient).to(MigrationsClient)
 container.bind(Types.Logger).to(Logger)
 container.bind(Types.MessageBrokerManager).to(MessageBrokerManager)
 container.bind(Types.TemplateFactory).to(TemplateFactory)
+container.bind(Types.SqsProducer).to(SqsProducer)
 // Customer
 container.bind(Types.GetCustomerByIdController).to(GetCustomerByIdController)
 container.bind(Types.CreateCustomerController).to(CreateCustomerController)

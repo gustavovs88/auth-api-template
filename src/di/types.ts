@@ -8,6 +8,8 @@ export let Types = {
   Logger: Symbol.for('Logger'),
   MessageBrokerManager: Symbol.for('MessageBrokerManager'),
   TemplateFactory: Symbol.for('TemplateFactory'),
+  SqsProducer: Symbol.for('SqsProducer'),
+
   // Customer
   CustomerRoutes: Symbol.for('CustomerRoutes'),
   GetCustomerByIdController: Symbol.for('GetCustomerByIdController'),

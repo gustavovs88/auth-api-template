@@ -50,12 +50,11 @@ export class CustomerService implements ICustomerService {
       const { refreshTokenSecret } = this.config.get()
       const decoded = JWT.verify(token, refreshTokenSecret) as JwtPayload
       const password = await hash(newPassword)
-      return this.customerRepository.updatePassword(
+      return await this.customerRepository.updatePassword(
         decoded.customerId,
         password
       )
     } catch (error) {
-      console.log(error)
       if (error instanceof JsonWebTokenError)
         throw new UnauthorizedError('Link expirado ou inválido')
       throw new InternalServerError(

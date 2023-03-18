@@ -1,5 +1,5 @@
 // Set the parameters
-export const tableParams = {
+export const customerTableParams = {
   AttributeDefinitions: [
     {
       AttributeName: 'id', //ATTRIBUTE_NAME_1
@@ -16,10 +16,6 @@ export const tableParams = {
       KeyType: 'HASH',
     },
   ],
-  ProvisionedThroughput: {
-    ReadCapacityUnits: 1,
-    WriteCapacityUnits: 1,
-  },
   GlobalSecondaryIndexes: [
     {
       IndexName: 'email',
@@ -30,16 +26,13 @@ export const tableParams = {
         },
       ],
       Projection: { ProjectionType: 'ALL' },
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1,
-      },
     },
   ],
   TableName: 'customers', //TABLE_NAME
   StreamSpecification: {
     StreamEnabled: false,
   },
+  BillingMode: 'PAY_PER_REQUEST',
 }
 
 export interface ICustomer {
